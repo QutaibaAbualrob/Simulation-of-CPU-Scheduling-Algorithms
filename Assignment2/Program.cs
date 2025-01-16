@@ -22,7 +22,7 @@ class filler
 
             processArray[i].ArrivalTime = time.ElapsedMilliseconds;
             var rand = new Random();
-            Thread.Sleep(rand.Next(1,400));
+            Thread.Sleep(rand.Next(1,536));
         }
         
     }
@@ -31,7 +31,9 @@ class filler
     {
         for (int i = 0; i < processCount; i++)
         {
-            processArray[i].BurstTime = processArray[i].ArrivalTime * 10;
+            var rand = new Random();
+
+            processArray[i].BurstTime = rand.Next(47,735) * 3;
         }
     }
 
@@ -63,7 +65,7 @@ class print
            var completionTime = process.StartTime + process.BurstTime;
            var turnaroundTime = completionTime - process.ArrivalTime;
            var waitingTime = turnaroundTime - process.BurstTime;
-           var respnseTime = process.StartTime - process.ArrivalTime;
+           var responseTime = process.StartTime - process.ArrivalTime;
 
             Console.WriteLine($"Process id {count}");
             Console.WriteLine($"Arrival time {process.ArrivalTime}ms");
@@ -73,7 +75,7 @@ class print
             Console.WriteLine($"CT (Completion Time) {completionTime}");
             Console.WriteLine($"TA (Turnaround Time) {turnaroundTime}");
             Console.WriteLine($"WT (Waiting Time) {waitingTime}");
-            Console.WriteLine($"RT (Respnse Time) {respnseTime}");
+            Console.WriteLine($"RT (Response Time) {responseTime}");
 
 
             Console.WriteLine($"______________________________");
@@ -192,6 +194,21 @@ class FCFS
     }
 
 }
+class SJF
+{
+    public static void shortestJobFirst(process[] pArray, Stopwatch time)
+    {
+        var sortedBasedOnBurstTime = pArray.OrderBy(x => x.BurstTime).ToList();
+
+        foreach(var process in sortedBasedOnBurstTime)
+        {
+            process.StartTime = time.ElapsedMilliseconds;
+            var rand = new Random();
+            Thread.Sleep(Convert.ToInt32(process.BurstTime));
+        }
+    }
+}
+
 
 class Program
 {
@@ -230,8 +247,8 @@ class Program
 
         Thread.Sleep(569);
         //Alogrithims
-        FCFS.firstComeFirstServe(processArray, time);
-
+       // FCFS.firstComeFirstServe(processArray, time);
+        //SJF.shortestJobFirst(processArray, time);
         Console.WriteLine("FCFS Alogrithim  :\n");
         print.printJobs(processArray);
 
