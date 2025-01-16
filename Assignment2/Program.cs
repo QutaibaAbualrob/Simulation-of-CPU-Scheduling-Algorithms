@@ -4,27 +4,27 @@ using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
+using System.Timers;
 
 class filler
 {
 
-    public static void fillJobsWithArrivalTime(process[] processArray, int processCount)
+    public static void fillJobsWithArrivalTime(process[] processArray, int processCount, Stopwatch time)
     {
 
 
 
 
-        var time = new Stopwatch();
-        time.Start();
+        
         for (int i = 0; i < processCount; i++)
         {
            
 
             processArray[i].ArrivalTime = time.ElapsedMilliseconds;
             var rand = new Random();
-            Thread.Sleep(rand.Next(1,500));
+            Thread.Sleep(rand.Next(1,400));
         }
-        time.Stop();
+        
     }
 
     public static void fillJobsWithBurstTime(process[] processArray, int processCount)
@@ -58,12 +58,24 @@ class print
         int count = 1;
         foreach (var process in processArray)
         {
-            
+
+
+           var completionTime = process.StartTime + process.BurstTime;
+           var turnaroundTime = completionTime - process.ArrivalTime;
+           var waitingTime = turnaroundTime - process.BurstTime;
+           var respnseTime = process.StartTime - process.ArrivalTime;
 
             Console.WriteLine($"Process id {count}");
-            Console.WriteLine($"This is process Arrival time {process.ArrivalTime}ms");
-            Console.WriteLine($"This is process Burst time {process.BurstTime}ms");
-            Console.WriteLine($"This is process Priority {process.ProcessPriority}");
+            Console.WriteLine($"Arrival time {process.ArrivalTime}ms");
+            Console.WriteLine($"Burst time {process.BurstTime}ms");
+            Console.WriteLine($"Priority {process.ProcessPriority}");
+            Console.WriteLine($"Start Time {process.StartTime}");
+            Console.WriteLine($"CT (Completion Time) {completionTime}");
+            Console.WriteLine($"TA (Turnaround Time) {turnaroundTime}");
+            Console.WriteLine($"WT (Waiting Time) {waitingTime}");
+            Console.WriteLine($"RT (Respnse Time) {respnseTime}");
+
+
             Console.WriteLine($"______________________________");
 
 
@@ -91,6 +103,7 @@ class process
     long arrivalTime;
     long burstTime;
     long processPriority;
+    long startTime;
 
     public long ArrivalTime
     {
@@ -131,14 +144,26 @@ class process
         }
     }
 
+    public long StartTime
+    {
+        get
+        {
+            return startTime;
+        }
+
+        set
+        {
+            this.startTime = value;
+        }
+    }
 
 
-
-    public process(int arrivalTime, int burstTime, int processPriority)
+    public process(long arrivalTime, long burstTime, long processPriority, long startTime)
     {
         this.arrivalTime = arrivalTime;
         this.burstTime = burstTime;
         this.processPriority = processPriority;
+        this.startTime = startTime;
     }
 
     public process()
@@ -146,6 +171,7 @@ class process
         arrivalTime = 0;
         burstTime = 0;
         processPriority = 0;
+        startTime = 0;
     }
 }
 
@@ -154,9 +180,14 @@ class FCFS
 {
     
 
-    public static void firstComeFirstServe(Dictionary<int, long[]>jobs) 
+    public static void firstComeFirstServe(process[] pArray, Stopwatch time) 
     {
-
+        foreach (var process in pArray)
+        {
+            process.StartTime = time.ElapsedMilliseconds;
+            var rand = new Random();
+            Thread.Sleep(Convert.ToInt32(process.BurstTime));
+        }
 
     }
 
@@ -170,9 +201,9 @@ class Program
 
     static void Main(string[] args)
     {
-        
 
-        
+
+        Console.WriteLine("Calculating Time, Please wait!!\n\n\n");
         int n = 5;
         process[] processArray = new process[n];
         for (int i = 0; i < n; i++)
@@ -190,15 +221,25 @@ class Program
 
          */
 
+        var time = new Stopwatch();
+        time.Start();
 
-        filler.fillJobsWithArrivalTime(processArray, n);
+        filler.fillJobsWithArrivalTime(processArray, n, time);
         filler.fillJobsWithBurstTime(processArray, n);
         filler.fillJobsWithPriority(processArray, n);
 
+        Thread.Sleep(569);
+        //Alogrithims
+        FCFS.firstComeFirstServe(processArray, time);
 
-
-
+        Console.WriteLine("FCFS Alogrithim  :\n");
         print.printJobs(processArray);
+
+
+
+
+        time.Stop();
+        
         
     }
 }
