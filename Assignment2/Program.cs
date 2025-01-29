@@ -15,14 +15,14 @@ static class filler
 
 
 
-
+        var rand = new Random();
 
         for (int i = 0; i < processCount; i++)
         {
 
             processArray[i].Id = (i+1)+100;
             processArray[i].ArrivalTime = time.ElapsedMilliseconds;
-            var rand = new Random();
+           
             Thread.Sleep(rand.Next(1, 536));
         }
 
@@ -30,11 +30,12 @@ static class filler
 
     public static void fillJobsWithBurstTime(process[] processArray, int processCount)
     {
+        var rand = new Random();
         for (int i = 0; i < processCount; i++)
         {
-            var rand = new Random();
+           
 
-            processArray[i].BurstTime = rand.Next(1000, 18500) /2;
+            processArray[i].BurstTime = rand.Next(1100, 11500);
         }
     }
 
@@ -261,6 +262,24 @@ class process
     }
 
 
+    //Copy constructor
+    public process (process other)
+    {
+
+        this.id = other.Id;
+        this.ArrivalTime = other.ArrivalTime;
+        this.burstTime = other.BurstTime;
+        this.processPriority = other.ProcessPriority;
+        this.startTime = other.StartTime;
+        this.completionTime = other.CompletionTime;
+        this.turnaroundTime = other.TurnaroundTime;
+        this.waitingTime = other.WaitingTime;
+        this.responseTime = other.ResponseTime;
+
+      
+    }
+
+
     public long calculateCompletionTime()
     {
         return this.completionTime = this.startTime + this.burstTime;
@@ -320,11 +339,11 @@ static class SRTF
 {
     public static process[] shortestRemainingTimeFirst(process[] pArray, Stopwatch time)
     {
-        //for
+       
         
         var list = new List<process>();
       
-        for (int i = 0; i < pArray.Length - 1 ; i++)
+        for (int i = 0; i < pArray.Length; i++)
         {
             //1
             if(pArray[i].BurstTime == 0)
@@ -335,9 +354,9 @@ static class SRTF
 
             pArray[i].StartTime = time.ElapsedMilliseconds;
             pArray[i].calculateCompletionTime();
-            pArray[i].BurstTime -= 1000;
+            
 
-            for(int j = i + 1; j < pArray.Length -1; j++)
+            for(int j = i + 1; j < pArray.Length; j++)
             {
                 if (pArray[i].BurstTime > pArray[j].BurstTime)
                 {
@@ -347,8 +366,10 @@ static class SRTF
                     if (pArray[j].BurstTime > 0)
                     {
                         Thread.Sleep(Convert.ToInt32(pArray[j].BurstTime));
+                        var temp1 = new process(pArray[j]);
+                        list.Add(temp1);
                         pArray[j].BurstTime = 0;
-                        list.Add(pArray[j]);   
+                      
                     }
                         
                 }
@@ -356,9 +377,18 @@ static class SRTF
 
 
             }
-            Thread.Sleep(Convert.ToInt32(pArray[i].BurstTime));
-            pArray[i].BurstTime = 0;
-            list.Add(pArray[i]);
+
+            var temp2 = new process(pArray[i]);
+            list.Add(temp2);
+
+            pArray[i].BurstTime -= 1000;
+            if (pArray[i].BurstTime > 0)
+            {
+                Thread.Sleep(Convert.ToInt32(pArray[i].BurstTime));
+                pArray[i].BurstTime = 0;
+            }
+                
+            
 
         }
         
@@ -411,7 +441,7 @@ static class Program
 
         Thread.Sleep(569);
 
-        int cs = 1;
+        int cs = 3;
         switch(cs)
         {
             case 1:
@@ -428,6 +458,8 @@ static class Program
 
             case 3:
                 Console.WriteLine("Shortest Remaining Time First (SRTF):\n");
+                processArray = SRTF.shortestRemainingTimeFirst(processArray, time);
+                print.printJobs(processArray);
                 break;
 
             case 4:
@@ -446,7 +478,7 @@ static class Program
         
 
 
-        print.printJobs(processArray);
+       
 
 
 
